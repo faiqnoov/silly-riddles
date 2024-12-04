@@ -1,6 +1,5 @@
 <template>
   <div>
-    <p>Merokett boskuhh... 🚀</p>
-    
+    <NuxtPage />
   </div>
 </template>

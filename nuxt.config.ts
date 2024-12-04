@@ -13,5 +13,16 @@ export default defineNuxtConfig({
      * @default "./components/ui"
      */
     componentDir: './components/ui'
+  },
+
+  runtimeConfig: {
+    // Private keys are only available on the server
+    someKey: '123',
+
+    // Public keys that are exposed to the client
+    public: {
+      appName: process.env.APP_NAME || 'Riddles App',
+      geminiKey: process.env.GEMINI_API_KEY || '',
+    }
   }
 })

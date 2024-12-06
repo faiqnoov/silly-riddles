@@ -7,46 +7,47 @@ const config = useRuntimeConfig()
 
 const genAI = new GoogleGenerativeAI(config.public.geminiKey);
 
-const schema = {
-  description: "Riddle",
-  type: SchemaType.OBJECT,
-  properties: {
-    riddleQuestion: {
-      type: SchemaType.STRING,
-      description: "Riddle question. Don't attach answer here.",
-      nullable: false,
-    },
-    riddleAnswer: {
-      type: SchemaType.STRING,
-      description: "Riddle answer",
-      nullable: false,
-    },
-  },
-  required: ["riddleQuestion", "riddleAnswer"],
-};
-
-const model = genAI.getGenerativeModel({
-  model: "gemini-1.5-pro",
-  generationConfig: {
-    responseMimeType: "application/json",
-    responseSchema: schema,
-  },
-});
-
-const riddlePrompt = ref('Beri saya sebuah tebak-tebakan yang belum pernah kamu berikan kepadaku sebelumnya! (dalam Bahasa Indonesia)')
 const question = ref('')
 const answer = ref('')
-
 const userAnswer = ref('')
 const score = ref('')
-
-const isLoading = ref(false)
+const reason = ref('')
+const isLoadingRiddle = ref(false)
+const isLoadingScore = ref(false)
 
 const requestRiddle = async () => {
-  isLoading.value = true
+  isLoadingRiddle.value = true
+
+  const schema = {
+    description: "Riddle",
+    type: SchemaType.OBJECT,
+    properties: {
+      riddleQuestion: {
+        type: SchemaType.STRING,
+        description: "Riddle question. Don't attach answer here.",
+        nullable: false,
+      },
+      riddleAnswer: {
+        type: SchemaType.STRING,
+        description: "Riddle answer",
+        nullable: false,
+      },
+    },
+    required: ["riddleQuestion", "riddleAnswer"],
+  };
+
+  const model = genAI.getGenerativeModel({
+    model: "gemini-1.5-pro",
+    generationConfig: {
+      responseMimeType: "application/json",
+      responseSchema: schema,
+    },
+  });
+
+  const prompt = 'Beri saya sebuah tebak-tebakan yang belum pernah kamu berikan kepadaku sebelumnya! (dalam Bahasa Indonesia)'
 
   try {
-    const result = await model.generateContent(riddlePrompt.value);
+    const result = await model.generateContent(prompt);
     const res = JSON.parse(result.response.text());
     
     question.value = res.riddleQuestion
@@ -55,25 +56,78 @@ const requestRiddle = async () => {
     console.error(err)
   }
 
-  isLoading.value = false
+  isLoadingRiddle.value = false
+}
+
+const evaluateAnswer = async () => {
+  isLoadingScore.value = true
+
+  const schema = {
+    description: "User answer evaluation",
+    type: SchemaType.OBJECT,
+    properties: {
+      answerScore: {
+        type: SchemaType.NUMBER,
+        description: "Scores are based on the accuracy of user answers with Gemini's answers on a scale of 0 to 100.",
+        nullable: false,
+      },
+      scoreReason: {
+        type: SchemaType.STRING,
+        description: "Explanation of the scores given",
+        nullable: false,
+      },
+    },
+    required: ["answerScore", "scoreReason"],
+  };
+
+  const model = genAI.getGenerativeModel({
+    model: "gemini-1.5-pro",
+    generationConfig: {
+      responseMimeType: "application/json",
+      responseSchema: schema,
+    },
+  });
+
+  const prompt = `Evaluasi jawaban user dari tebak-tebakan "${question.value}" yang memiliki jawaban ${answer.value}. User menjawab "${userAnswer.value}"`
+
+  try {
+    const result = await model.generateContent(prompt);
+    const res = JSON.parse(result.response.text());
+    
+    score.value = res.answerScore
+    reason.value = res.scoreReason
+  } catch(err) {
+    console.error(err)
+  }
+
+  isLoadingScore.value = false
 }
 </script>
 
 <template>
-  <div class="px-5 py-10">
-    <h1 class="text-2xl my-4">Simple Riddle</h1>
+  <div class="px-5 py-6">
+    <h1 class="text-2xl mb-4">Simple Riddle</h1>
 
     <h2>Question:</h2>
     <div class="mt-4 border rounded p-4 flex flex-col items-center gap-y-4">
       <Button @click="requestRiddle">Generate Question</Button>
-      <Skeleton v-if="isLoading" class="h-8 w-full" />
+      <Skeleton v-if="isLoadingRiddle" class="h-10 w-full" />
       <div>{{ question }}</div>
     </div>
 
     <h2 class="mt-4">Answer:</h2>
     <div class="flex gap-2 mt-4">
       <Input v-model="userAnswer" type="text"/>
-      <Button>Submit</Button>
+      <Button @click="evaluateAnswer">Submit</Button>
+    </div>
+
+    <h2 class="mt-4">Result:</h2>
+    <div class="mt-4 border rounded p-4 flex flex-col gap-y-4">
+      <Skeleton v-if="isLoadingScore" class="h-16 w-full" />
+      <div v-else>
+        <div>Score: {{ score }}</div>
+        <div>Explanation: {{ reason }}</div>
+      </div>
     </div>
   </div>
 </template>

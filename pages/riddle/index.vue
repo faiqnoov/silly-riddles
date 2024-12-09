@@ -37,7 +37,7 @@ const requestRiddle = async () => {
   };
 
   const model = genAI.getGenerativeModel({
-    model: "gemini-1.5-pro",
+    model: config.public.genAIModel,
     generationConfig: {
       responseMimeType: "application/json",
       responseSchema: schema,
@@ -81,7 +81,7 @@ const evaluateAnswer = async () => {
   };
 
   const model = genAI.getGenerativeModel({
-    model: "gemini-1.5-pro",
+    model: config.public.genAIModel,
     generationConfig: {
       responseMimeType: "application/json",
       responseSchema: schema,

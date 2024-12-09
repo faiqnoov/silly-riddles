@@ -23,6 +23,7 @@ export default defineNuxtConfig({
     public: {
       appName: process.env.APP_NAME || 'Riddles App',
       geminiKey: process.env.GEMINI_API_KEY || '',
+      genAIModel: process.env.GEN_AI_MODEL || 'gemini-1.5-flash',
     }
   }
 })

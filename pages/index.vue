@@ -6,7 +6,7 @@ const config = useRuntimeConfig()
 const { parseResponseTextToHTML } = useTextParser()
 
 const genAI = new GoogleGenerativeAI(config.public.geminiKey);
-const model = genAI.getGenerativeModel({ model: "gemini-1.5-flash" });
+const model = genAI.getGenerativeModel({ model: config.public.genAIModel });
 const prompt = ref()
 const parsedHTML = ref('')
 

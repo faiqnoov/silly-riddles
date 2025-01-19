@@ -102,31 +102,65 @@ const evaluateAnswer = async () => {
 
   isLoadingScore.value = false
 }
+
+const reset = () => {
+  question.value = ''
+  answer.value = ''
+  userAnswer.value = ''
+  score.value = ''
+  reason.value = ''
+}
 </script>
 
 <template>
   <div class="px-5 py-6">
-    <h1 class="text-2xl mb-4">Simple Riddle</h1>
+    <h1 class="text-2xl">Simple Riddle</h1>
 
-    <h2>Question:</h2>
-    <div class="mt-4 border rounded p-4 flex flex-col items-center gap-y-4">
-      <Button @click="requestRiddle">Generate Question</Button>
-      <Skeleton v-if="isLoadingRiddle" class="h-10 w-full" />
-      <div>{{ question }}</div>
-    </div>
+    <div class="mt-4">
+      <Skeleton v-if="isLoadingRiddle" class="h-20 w-full" />
 
-    <h2 class="mt-4">Answer:</h2>
-    <div class="flex gap-2 mt-4">
-      <Input v-model="userAnswer" type="text"/>
-      <Button @click="evaluateAnswer">Submit</Button>
-    </div>
-
-    <h2 class="mt-4">Result:</h2>
-    <div class="mt-4 border rounded p-4 flex flex-col gap-y-4">
-      <Skeleton v-if="isLoadingScore" class="h-16 w-full" />
       <div v-else>
-        <div>Score: {{ score }}</div>
-        <div>Explanation: {{ reason }}</div>
+        <Button
+          v-if="!question"
+          @click="requestRiddle"
+          class="block mx-auto mt-20"
+        >
+          Generate Question
+        </Button>
+  
+        <div v-else>
+          <div class="flex justify-between items-end">
+            <h2>Question:</h2>
+            <Button variant="ghost" @click="reset">Reset</Button>
+          </div>
+          <div class="mt-4 border rounded p-4 flex flex-col items-center gap-y-4">
+            <div>{{ question }}</div>
+          </div>
+  
+          <div class="mt-4">
+            <h2>Answer:</h2>
+            <div class="flex gap-2 mt-4">
+              <Input
+                v-model="userAnswer"
+                type="text"
+                @keyup.enter="evaluateAnswer"
+              />
+              <Button @click="evaluateAnswer">Submit</Button>
+            </div>
+          </div>
+  
+          <Skeleton v-if="isLoadingScore" class="h-16 w-full mt-4" />
+          
+          <div v-if="!isLoadingScore && (score || reason)" class="mt-4">
+            <h2>Result:</h2>
+            <div class="mt-4 border rounded p-4 flex flex-col gap-y-4">
+              <div>
+                <div>Score: {{ score }}</div>
+                <div>Explanation: {{ reason }}</div>
+              </div>
+            </div>
+          </div>
+        </div>
       </div>
     </div>
   </div>

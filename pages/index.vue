@@ -1,36 +1,28 @@
 <script setup lang="ts">
-import { GoogleGenerativeAI } from "@google/generative-ai";
-import Input from "~/components/ui/input/Input.vue";
-
-const config = useRuntimeConfig()
-const { parseResponseTextToHTML } = useTextParser()
-
-const genAI = new GoogleGenerativeAI(config.public.geminiKey);
-const model = genAI.getGenerativeModel({ model: config.public.genAIModel });
-const prompt = ref()
-const parsedHTML = ref('')
-
-const submitPrompt = async () => {
-  try {
-    const result = await model.generateContent(prompt.value);
-    parsedHTML.value = parseResponseTextToHTML(result.response.text() || '')
-  } catch(err) {
-    console.error(err)
-  }
-}
+const features = [
+  {
+    title: 'Simpe Question',
+    route: '/ask'
+  },
+  {
+    title: 'Riddle',
+    route: '/riddle'
+  },
+]
 </script>
 
 <template>
-  <div class="px-5 py-10">
-    <h1 class="text-2xl">Ask Me Anything!</h1>
-    <div class="flex gap-2 mt-4">
-      <Input v-model="prompt" type="text"/>
-      <Button @click="submitPrompt">Submit</Button>
-    </div>
-
-    <h2 class="mt-8">Result:</h2>
-    <div class="mt-4 border rounded p-4">
-      <div id="gemini-response" v-html="parsedHTML"></div>
+  <div class="flex flex-col items-center justify-center h-screen">
+    <p>Available Features:</p>
+    <div class="flex gap-4 mt-5">
+      <div
+        v-for="(item, idx) in features"
+        :key="idx"
+        class="p-4 rounded-lg border cursor-pointer"
+        @click="navigateTo(item.route)"
+      >
+        <p>{{ item.title }}</p>
+      </div>
     </div>
   </div>
 </template>
